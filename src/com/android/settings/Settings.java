@@ -37,6 +37,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.os.IDudiManagerService;
 import android.os.INetworkManagementService;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -53,11 +54,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.internal.util.ArrayUtils;
 import com.android.settings.accessibility.AccessibilitySettings;
@@ -131,6 +134,7 @@ public class Settings extends PreferenceActivity
     private Header mCurrentHeader;
     private Header mParentHeader;
     private boolean mInLocalHeaderSwitch;
+    
 
     // Show only these settings for restricted users
     private int[] SETTINGS_FOR_RESTRICTED = {
@@ -145,6 +149,7 @@ public class Settings extends PreferenceActivity
             R.id.storage_settings,
             R.id.application_settings,
             R.id.battery_settings,
+            R.id.service_settings,
             R.id.personal_section,
             R.id.location_settings,
             R.id.security_settings,
@@ -162,6 +167,8 @@ public class Settings extends PreferenceActivity
     };
 
     private SharedPreferences mDevelopmentPreferences;
+    //kdh
+    private static SharedPreferences mDudiState; 
     private SharedPreferences.OnSharedPreferenceChangeListener mDevelopmentPreferencesListener;
 
     // TODO: Update Call Settings based on airplane mode state.
@@ -171,6 +178,7 @@ public class Settings extends PreferenceActivity
     private AuthenticatorHelper mAuthenticatorHelper;
     private Header mLastHeader;
     private boolean mListeningToAccountUpdates;
+    private static boolean mstate;
 
     private boolean mBatteryPresent = true;
     private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
@@ -194,6 +202,8 @@ public class Settings extends PreferenceActivity
         if (getIntent().hasExtra(EXTRA_UI_OPTIONS)) {
             getWindow().setUiOptions(getIntent().getIntExtra(EXTRA_UI_OPTIONS, 0));
         }
+        
+        
 
         mAuthenticatorHelper = new AuthenticatorHelper();
         mAuthenticatorHelper.updateAuthDescriptions(this);
@@ -201,12 +211,18 @@ public class Settings extends PreferenceActivity
 
         mDevelopmentPreferences = getSharedPreferences(DevelopmentSettings.PREF_FILE,
                 Context.MODE_PRIVATE);
+        
+        //kdh
+        mDudiState = getSharedPreferences("dudi", 0);
+        mDudiState.edit().putBoolean("state", false).apply();
+        
+        Log.i("kdh","mstate "+mstate);
 
         getMetaData();
         mInLocalHeaderSwitch = true;
         super.onCreate(savedInstanceState);
         mInLocalHeaderSwitch = false;
-
+        
         if (!onIsHidingHeaders() && onIsMultiPane()) {
             highlightHeader(mTopLevelHeaderId);
             // Force the title so that it doesn't get overridden by a direct launch of
@@ -240,6 +256,7 @@ public class Settings extends PreferenceActivity
             getActionBar().setDisplayHomeAsUpEnabled(false);
             getActionBar().setHomeButtonEnabled(false);
         }
+        
     }
 
     @Override
@@ -296,6 +313,7 @@ public class Settings extends PreferenceActivity
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         if (mListeningToAccountUpdates) {
             AccountManager.get(this).removeOnAccountsUpdatedListener(this);
         }
@@ -772,6 +790,7 @@ public class Settings extends PreferenceActivity
     }
 
     private static class HeaderAdapter extends ArrayAdapter<Header> {
+    
         static final int HEADER_TYPE_CATEGORY = 0;
         static final int HEADER_TYPE_NORMAL = 1;
         static final int HEADER_TYPE_SWITCH = 2;
@@ -783,6 +802,7 @@ public class Settings extends PreferenceActivity
         private AuthenticatorHelper mAuthHelper;
         private DevicePolicyManager mDevicePolicyManager;
 
+        
         private static class HeaderViewHolder {
             ImageView icon;
             TextView title;
@@ -795,9 +815,9 @@ public class Settings extends PreferenceActivity
         private LayoutInflater mInflater;
 
         static int getHeaderType(Header header) {
-            if (header.fragment == null && header.intent == null) {
+            if (header.fragment == null && header.intent == null && header.id != R.id.service_settings) {
                 return HEADER_TYPE_CATEGORY;
-            } else if (header.id == R.id.wifi_settings || header.id == R.id.bluetooth_settings) {
+            } else if (header.id == R.id.wifi_settings || header.id == R.id.bluetooth_settings || header.id == R.id.service_settings) {
                 return HEADER_TYPE_SWITCH;
             } else if (header.id == R.id.security_settings) {
                 return HEADER_TYPE_BUTTON;
@@ -848,8 +868,10 @@ public class Settings extends PreferenceActivity
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+        	
             HeaderViewHolder holder;
             Header header = getItem(position);
+            
             int headerType = getHeaderType(header);
             View view = null;
 
@@ -912,9 +934,53 @@ public class Settings extends PreferenceActivity
                     // Would need a different treatment if the main menu had more switches
                     if (header.id == R.id.wifi_settings) {
                         mWifiEnabler.setSwitch(holder.switch_);
-                    } else {
+                    } else if(header.id == R.id.bluetooth_settings){
                         mBluetoothEnabler.setSwitch(holder.switch_);
+                    } else if(header.id == R.id.service_settings){
+                    	//kdh
+                    if(mstate == false)
+                    {
+                    	Log.i("kdh","setChecked - false");
+                    	holder.switch_.setChecked(false);
                     }
+                    else
+                    {
+                    	Log.i("kdh","setChecked - true");
+                    	holder.switch_.setChecked(true);
+                    }
+	                holder.switch_.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+	                    	@Override
+	                	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
+	                    		
+	                    		Intent intent = new Intent("com.android.service.MyService");
+	                    		
+	                    		if(isChecked)
+	                    		{
+	                    			getContext().startService(intent);
+	                    			Log.i("kdh","DudiFloatService Start");
+	                    			mDudiState.edit().putBoolean("state", true).apply();
+	                    			mstate = mDudiState.getBoolean("state", false);
+	                    		}
+	                    		else
+	                    		{ 
+	                    			try
+	                    			{
+	                    				IDudiManagerService sysService = IDudiManagerService.Stub.asInterface(ServiceManager.getService("DudiManagerService"));
+	                    				sysService.unbindWithFloatService();
+	                    			}catch(RemoteException e)
+	                    			{
+	                    				
+	                    			}
+	                    			getContext().stopService(intent);
+	                    			Log.i("kdh","DudiFloatService Stop");
+	                    			mDudiState.edit().putBoolean("state", false).apply();
+	                    			mstate = mDudiState.getBoolean("state", false);
+	                    		}
+	                    	
+	                    	}
+                    	});
+                    }
+                    
                     updateCommonHeaderView(header, holder);
                     break;
 
@@ -1056,6 +1122,11 @@ public class Settings extends PreferenceActivity
 
     public static void requestHomeNotice() {
         sShowNoHomeNotice = true;
+    }
+
+    public boolean getdudistate()
+    {
+    	return mstate;
     }
 
     /*

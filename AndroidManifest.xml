@@ -4,7 +4,8 @@
         android:sharedUserId="android.uid.system">
 
     <original-package android:name="com.android.settings" />
-
+	
+	<uses-permission android:name="android.permission.SYSTEMd_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
@@ -88,7 +89,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+      
         </activity>
+        
+        <service android:name=".TopView">
+        	<intent-filter>
+        		<action android:name="com.android.service.MyService"/>
+        	</intent-filter>
+        </service>
 
         <activity android:name=".SubSettings"
                 android:taskAffinity="com.android.settings"

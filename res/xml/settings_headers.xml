@@ -104,6 +104,16 @@
         android:title="@string/applications_settings"
         android:id="@+id/application_settings" />
 
+	
+	<!-- kdh -->
+	 
+	<!-- Dudi Settings -->
+    <header
+        android:fragment="com.android.settings.DudiSettings"
+        android:title="@string/service_settings_title"
+        android:icon="@drawable/ic_sync_anim_holo" 
+	android:id="@+id/service_settings"/>
+
     <!-- Manage users -->
     <header
         android:fragment="com.android.settings.users.UserSettings"
