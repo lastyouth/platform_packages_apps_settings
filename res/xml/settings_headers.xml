@@ -112,7 +112,7 @@
         android:fragment="com.android.settings.DudiSettings"
         android:title="@string/service_settings_title"
         android:icon="@drawable/ic_sync_anim_holo" 
-	android:id="@+id/service_settings"/>
+	android:id="@+id/dudifloatservice_settings"/>
 
     <!-- Manage users -->
     <header

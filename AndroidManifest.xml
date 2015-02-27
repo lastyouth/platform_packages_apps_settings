@@ -5,7 +5,7 @@
 
     <original-package android:name="com.android.settings" />
 	
-	<uses-permission android:name="android.permission.SYSTEMd_ALERT_WINDOW" />
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
@@ -92,9 +92,9 @@
       
         </activity>
         
-        <service android:name=".TopView">
+        <service android:name=".DudiFloatService">
         	<intent-filter>
-        		<action android:name="com.android.service.MyService"/>
+        		<action android:name="com.android.service.DudiFloatService"/>
         	</intent-filter>
         </service>
 

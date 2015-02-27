@@ -149,7 +149,7 @@ public class Settings extends PreferenceActivity
             R.id.storage_settings,
             R.id.application_settings,
             R.id.battery_settings,
-            R.id.service_settings,
+            R.id.dudifloatservice_settings,
             R.id.personal_section,
             R.id.location_settings,
             R.id.security_settings,
@@ -815,9 +815,9 @@ public class Settings extends PreferenceActivity
         private LayoutInflater mInflater;
 
         static int getHeaderType(Header header) {
-            if (header.fragment == null && header.intent == null && header.id != R.id.service_settings) {
+            if (header.fragment == null && header.intent == null && header.id != R.id.dudifloatservice_settings) {
                 return HEADER_TYPE_CATEGORY;
-            } else if (header.id == R.id.wifi_settings || header.id == R.id.bluetooth_settings || header.id == R.id.service_settings) {
+            } else if (header.id == R.id.wifi_settings || header.id == R.id.bluetooth_settings || header.id == R.id.dudifloatservice_settings) {
                 return HEADER_TYPE_SWITCH;
             } else if (header.id == R.id.security_settings) {
                 return HEADER_TYPE_BUTTON;
@@ -936,7 +936,7 @@ public class Settings extends PreferenceActivity
                         mWifiEnabler.setSwitch(holder.switch_);
                     } else if(header.id == R.id.bluetooth_settings){
                         mBluetoothEnabler.setSwitch(holder.switch_);
-                    } else if(header.id == R.id.service_settings){
+                    } else if(header.id == R.id.dudifloatservice_settings){
                     	//kdh
                     if(mstate == false)
                     {
@@ -952,7 +952,7 @@ public class Settings extends PreferenceActivity
 	                    	@Override
 	                	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
 	                    		
-	                    		Intent intent = new Intent("com.android.service.MyService");
+	                    		Intent intent = new Intent("com.android.service.DudiFloatService");
 	                    		
 	                    		if(isChecked)
 	                    		{
