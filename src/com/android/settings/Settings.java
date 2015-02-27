@@ -27,6 +27,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -35,6 +36,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.net.wifi.WifiManager;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.IDudiManagerService;
@@ -178,7 +180,7 @@ public class Settings extends PreferenceActivity
     private AuthenticatorHelper mAuthenticatorHelper;
     private Header mLastHeader;
     private boolean mListeningToAccountUpdates;
-    private static boolean mstate;
+    private static boolean mDudiFloatServiceState;
 
     private boolean mBatteryPresent = true;
     private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
@@ -216,7 +218,7 @@ public class Settings extends PreferenceActivity
         mDudiState = getSharedPreferences("dudi", 0);
         mDudiState.edit().putBoolean("state", false).apply();
         
-        Log.i("kdh","mstate "+mstate);
+        Log.i("kdh","DudiFloatServiceState :  "+mDudiFloatServiceState);
 
         getMetaData();
         mInLocalHeaderSwitch = true;
@@ -938,46 +940,88 @@ public class Settings extends PreferenceActivity
                         mBluetoothEnabler.setSwitch(holder.switch_);
                     } else if(header.id == R.id.dudifloatservice_settings){
                     	//kdh
-                    if(mstate == false)
-                    {
-                    	Log.i("kdh","setChecked - false");
-                    	holder.switch_.setChecked(false);
-                    }
-                    else
-                    {
-                    	Log.i("kdh","setChecked - true");
-                    	holder.switch_.setChecked(true);
-                    }
-	                holder.switch_.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-	                    	@Override
-	                	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
-	                    		
-	                    		Intent intent = new Intent("com.android.service.DudiFloatService");
-	                    		
-	                    		if(isChecked)
-	                    		{
-	                    			getContext().startService(intent);
-	                    			Log.i("kdh","DudiFloatService Start");
-	                    			mDudiState.edit().putBoolean("state", true).apply();
-	                    			mstate = mDudiState.getBoolean("state", false);
-	                    		}
-	                    		else
-	                    		{ 
-	                    			try
-	                    			{
-	                    				IDudiManagerService sysService = IDudiManagerService.Stub.asInterface(ServiceManager.getService("DudiManagerService"));
-	                    				sysService.unbindWithFloatService();
-	                    			}catch(RemoteException e)
-	                    			{
-	                    				
-	                    			}
-	                    			getContext().stopService(intent);
-	                    			Log.i("kdh","DudiFloatService Stop");
-	                    			mDudiState.edit().putBoolean("state", false).apply();
-	                    			mstate = mDudiState.getBoolean("state", false);
-	                    		}
-	                    	
-	                    	}
+                    	final HeaderViewHolder dudiholder = holder;
+                    	
+                    	if(mDudiFloatServiceState == false)
+                    	{
+                    		Log.i("kdh","setChecked - false");
+                    		// check wifi is enable
+
+
+                    		dudiholder.switch_.setChecked(false);
+                    	}
+                    	else
+                    	{
+                    		Log.i("kdh","setChecked - true");
+                    		dudiholder.switch_.setChecked(true);
+                    	}
+
+                    	dudiholder.switch_.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    		@Override
+                    		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
+
+                    			Intent intent = new Intent("com.android.service.DudiFloatService");
+
+                    			if(isChecked)
+                    			{
+                    				final WifiManager wifisrv = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+
+                    				Log.i("DudiFloatService","WifiManager : isWifiEnabled : " +wifisrv.isWifiEnabled() + " wifistate : " + wifisrv.getWifiState());
+
+                    				if(!wifisrv.isWifiEnabled())
+                    				{
+                    					// if this, Service cannot be enabled.
+                    					DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+
+                    						@Override
+                    						public void onClick(DialogInterface dialog, int which) {
+                    							// TODO Auto-generated method stub
+                    							switch(which)
+                    							{
+                    							case DialogInterface.BUTTON_POSITIVE:
+                    								boolean flag = wifisrv.setWifiEnabled(true);
+                    								
+                    								Log.i("DudiFloatService","set Wifi flag : "+flag);
+                    								
+                    								break;
+                    							case DialogInterface.BUTTON_NEGATIVE:
+                    								break;
+                    							}
+                    						}
+                    					};
+
+                    					AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                    					builder.setMessage("Wifi is not enabled, Do you want to Enable?").setPositiveButton("Yes", dialogClickListener)
+                    					.setNegativeButton("No", dialogClickListener).show();
+                    					dudiholder.switch_.setChecked(false);
+                    					return;
+                    				}
+                    				getContext().startService(intent);
+                    				Log.i("kdh","DudiFloatService Start");
+                    				mDudiState.edit().putBoolean("state", true).apply();
+                    				mDudiFloatServiceState = mDudiState.getBoolean("state", false);
+                    			}
+                    			else
+                    			{ 
+                    				if(mDudiFloatServiceState)
+                    				{
+                    					try
+                    					{
+                    						IDudiManagerService sysService = IDudiManagerService.Stub.asInterface(ServiceManager.getService("DudiManagerService"));
+                    						sysService.unbindWithFloatService();
+                    					}catch(RemoteException e)
+                    					{
+
+                    					}
+                    					getContext().stopService(intent);
+                    					Log.i("kdh","DudiFloatService Stop");
+                    					mDudiState.edit().putBoolean("state", false).apply();
+                    					mDudiFloatServiceState = mDudiState.getBoolean("state", false);
+                    				}
+                    			}
+
+                    		}
                     	});
                     }
                     
@@ -1126,7 +1170,7 @@ public class Settings extends PreferenceActivity
 
     public boolean getdudistate()
     {
-    	return mstate;
+    	return mDudiFloatServiceState;
     }
 
     /*

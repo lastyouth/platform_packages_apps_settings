@@ -38,7 +38,10 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.WpsInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IDudiManagerService;
 import android.os.Looper;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -93,6 +96,9 @@ public final class WifiDisplaySettings extends SettingsPreferenceFragment {
     private static final int ORDER_CONNECTED = 2;
     private static final int ORDER_AVAILABLE = 3;
     private static final int ORDER_UNAVAILABLE = 4;
+    
+    // For DudiManagerService
+    private static final IDudiManagerService dudiService = IDudiManagerService.Stub.asInterface(ServiceManager.getService("DudiManagerService"));
 
     private final Handler mHandler;
 
@@ -133,6 +139,7 @@ public final class WifiDisplaySettings extends SettingsPreferenceFragment {
         mWifiP2pChannel = mWifiP2pManager.initialize(context, Looper.getMainLooper(), null);
 
         addPreferencesFromResource(R.xml.wifi_display_settings);
+        
         setHasOptionsMenu(true);
     }
 
@@ -609,7 +616,14 @@ public final class WifiDisplaySettings extends SettingsPreferenceFragment {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(DisplayManager.ACTION_WIFI_DISPLAY_STATUS_CHANGED)) {
-                scheduleUpdate(CHANGE_WIFI_DISPLAY_STATUS);
+            	Slog.i(TAG,"WifiDisplayStatus changed : "+mDisplayManager.getWifiDisplayStatus());
+                try {
+					dudiService.setCurrentWFDStatus(mDisplayManager.getWifiDisplayStatus());
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            	scheduleUpdate(CHANGE_WIFI_DISPLAY_STATUS);
             }
         }
     };
