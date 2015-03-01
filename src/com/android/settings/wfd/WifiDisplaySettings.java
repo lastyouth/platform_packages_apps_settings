@@ -96,9 +96,6 @@ public final class WifiDisplaySettings extends SettingsPreferenceFragment {
     private static final int ORDER_CONNECTED = 2;
     private static final int ORDER_AVAILABLE = 3;
     private static final int ORDER_UNAVAILABLE = 4;
-    
-    // For DudiManagerService
-    private static final IDudiManagerService dudiService = IDudiManagerService.Stub.asInterface(ServiceManager.getService("DudiManagerService"));
 
     private final Handler mHandler;
 
@@ -616,13 +613,6 @@ public final class WifiDisplaySettings extends SettingsPreferenceFragment {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(DisplayManager.ACTION_WIFI_DISPLAY_STATUS_CHANGED)) {
-            	Slog.i(TAG,"WifiDisplayStatus changed : "+mDisplayManager.getWifiDisplayStatus());
-                try {
-					dudiService.setCurrentWFDStatus(mDisplayManager.getWifiDisplayStatus());
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
             	scheduleUpdate(CHANGE_WIFI_DISPLAY_STATUS);
             }
         }
