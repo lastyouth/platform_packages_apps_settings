@@ -83,7 +83,7 @@ public class DudiFloatService extends Service{
 			// application start
 			switch(v.getId())
 			{
-			case SEND_KEY_EVENT_BUTTON:
+			/*case SEND_KEY_EVENT_BUTTON:
 				{
 					if(singletap == true)
 					{
@@ -99,7 +99,7 @@ public class DudiFloatService extends Service{
 						//Toast.makeText(getApplicationContext(), "on Click", Toast.LENGTH_SHORT).show();	
 					}
 				}
-				break;
+				break;*/
 			case REGISTER_BUTTON:
 				{
 					try{
@@ -110,7 +110,7 @@ public class DudiFloatService extends Service{
 					}
 				}
 				break;
-			case SEND_TOUCH_EVENT_BUTTON:
+			/*case SEND_TOUCH_EVENT_BUTTON:
 				{
 					
 					int X = mParamsForSendTouchEventButton.x;
@@ -148,7 +148,7 @@ public class DudiFloatService extends Service{
 					e.printStackTrace();
 					}
 				}
-				break;
+				break;*/
 			}
 		}
 	};
@@ -171,7 +171,7 @@ public class DudiFloatService extends Service{
 					PREV_X = mParamsForRegisterButton.x;
 					PREV_Y = mParamsForRegisterButton.y;
 				}
-				else if(v.getId() == SEND_KEY_EVENT_BUTTON)
+				/*else if(v.getId() == SEND_KEY_EVENT_BUTTON)
 				{
 					PREV_X = mParamsForSendCommandButton.x;
 					PREV_Y = mParamsForSendCommandButton.y;
@@ -179,7 +179,7 @@ public class DudiFloatService extends Service{
 				{
 					PREV_X = mParamsForSendTouchEventButton.x;//(int) event.getX();
 					PREV_Y = mParamsForSendTouchEventButton.y;//(int) event.getY();
-				}
+				}*/
 				break;
 				
 			case MotionEvent.ACTION_MOVE:
@@ -194,7 +194,7 @@ public class DudiFloatService extends Service{
 					mParamsForRegisterButton.y = PREV_Y+y;
 					mWindowManager.updateViewLayout(registerButton, mParamsForRegisterButton);
 				}
-				else if(v.getId() == SEND_KEY_EVENT_BUTTON)
+				/*else if(v.getId() == SEND_KEY_EVENT_BUTTON)
 				{
 					optimizePosition(mParamsForSendCommandButton);
 					mParamsForSendCommandButton.x = PREV_X + x;
@@ -207,7 +207,7 @@ public class DudiFloatService extends Service{
 					mParamsForSendTouchEventButton.y = PREV_Y +y;
 					mWindowManager.updateViewLayout(sendTouchEventButton, mParamsForSendTouchEventButton);
 				}
-				break;
+				break;*/
 			}
 
 			return false;
@@ -260,6 +260,7 @@ public class DudiFloatService extends Service{
 		try
 		{
 			sysService.bindWithFloatService();
+			sysService.activateConnectToSink();
 		}catch(RemoteException e)
 		{
 			
@@ -280,7 +281,7 @@ public class DudiFloatService extends Service{
 		registerButton.setBackgroundResource(R.drawable.dudi_register);
 		registerButton.setId(REGISTER_BUTTON);
 		
-		sendCommandButton = new Button(this);
+		/*sendCommandButton = new Button(this);
 		sendCommandButton.setOnClickListener(mViewClickListener);
 		sendCommandButton.setOnTouchListener(mViewTouchListener);
 		sendCommandButton.setAlpha(255);
@@ -292,7 +293,7 @@ public class DudiFloatService extends Service{
 		sendTouchEventButton.setOnTouchListener(mViewTouchListener);
 		sendTouchEventButton.setAlpha(255);
 		sendTouchEventButton.setBackgroundResource(R.drawable.ic_btn_next);
-		sendTouchEventButton.setId(SEND_TOUCH_EVENT_BUTTON);
+		sendTouchEventButton.setId(SEND_TOUCH_EVENT_BUTTON);*/
 		
 		mParamsForRegisterButton = new WindowManager.LayoutParams(
 				mPoint.x/10,
@@ -306,7 +307,7 @@ public class DudiFloatService extends Service{
 		
 		mWindowManager.addView(registerButton,  mParamsForRegisterButton);
 		
-		mParamsForSendCommandButton = new WindowManager.LayoutParams(mPoint.x/10,mPoint.y/15,
+		/*mParamsForSendCommandButton = new WindowManager.LayoutParams(mPoint.x/10,mPoint.y/15,
 				mPoint.x+25,mPoint.y+25,WindowManager.LayoutParams.TYPE_PHONE,
 				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.RGBA_8888);
 		mParamsForSendCommandButton.gravity = Gravity.LEFT | Gravity.TOP;
@@ -322,11 +323,11 @@ public class DudiFloatService extends Service{
 		mParamsForSendTouchEventButton.verticalMargin = 0.01f;
 		mParamsForSendTouchEventButton.horizontalMargin = 0.01f;
 		
-		mWindowManager.addView(sendTouchEventButton, mParamsForSendTouchEventButton);
+		mWindowManager.addView(sendTouchEventButton, mParamsForSendTouchEventButton);*/
 		
 		buttonList.add(registerButton);
-		buttonList.add(sendCommandButton);
-		buttonList.add(sendTouchEventButton);
+		/*buttonList.add(sendCommandButton);
+		buttonList.add(sendTouchEventButton);*/
 	}
 	private void removeButton()
 	{
